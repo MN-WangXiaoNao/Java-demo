@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.wzg.mbsb.mapper.SysUserMapper">
+
+    <resultMap id="userRoleMap" type="com.wzg.mbsb.dto.SysUserDTO">
+        <!--        SysUser 属性-->
+        <id property="id" column="id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPassword" column="user_password"/>
+        <result property="userEmail" column="user_email"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="userInfo" column="user_info"/>
+        <result property="headImg" column="head_img" jdbcType="BLOB"/>
+        <!--        SysRole 属性-->
+        <result property="sysRole.id" column="role_id"/>
+        <result property="sysRole.roleName" column="role_name"/>
+        <result property="sysRole.enabled" column="enabled"/>
+        <result property="sysRole.createBy" column="create_by"/>
+        <result property="sysRole.createTime" column="role+create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+
+    <insert id="insertBySelective" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user (
+        user_name, user_password,
+        <if test="userEmail!= null and userEmail != ''">
+            user_email,
+        </if>
+        user_info, head_img, create_time)
+        values(
+        #{userName},#{userPassword},
+        <if test="userEmail!= null and userEmail != ''">
+            #{userEmail},
+        </if>
+        #{userInfo},
+        #{headImg,jdbcType=BLOB},
+        #{createTime,jdbcType=TIMESTAMP}
+        )
+    </insert>
+    <insert id="batchInsert1">
+        insert into sys_user(user_name, user_password, user_email, user_info,create_time)
+        values
+        <foreach collection="entities" separator="," item="user" index="i">
+            (
+            #{user.userName},
+            #{user.userPassword},
+            #{user.userEmail},
+            #{user.userInfo},
+            #{user.createTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+
+    <update id="updateByIdSelective">
+        update sys_user set
+        <if test="userName!= null and userName != ''">
+            user_name = #{username},
+        </if>
+
+        <if test="userPassword!= null and userPassword != ''">
+            user_password = #{userPassword},
+        </if>
+        <if test="userEmail!= null and userEmail != ''">
+            user_email = #{userEmail},
+        </if>
+        <if test="headImg != null">
+            head_img = #{headImg,jdbcType=BLOB},
+        </if>
+        <if test="createTime!= null ">
+            create_time = #{createTime,jdbcType=TIMESTAMP},
+        </if>
+        id = #{id}
+        where id = #{id}
+    </update>
+    <update id="updateByIdSelective2">
+        update sys_user
+        <set>
+            <if test="userName!= null and userName != ''">
+                user_name = #{username},
+            </if>
+
+            <if test="userPassword!= null and userPassword != ''">
+                user_password = #{userPassword},
+            </if>
+            <if test="userEmail!= null and userEmail != ''">
+                user_email = #{userEmail},
+            </if>
+            <if test="headImg != null">
+                head_img = #{headImg,jdbcType=BLOB},
+            </if>
+            <if test="createTime!= null ">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            id = #{id},
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="selectByIdOrUserName" resultType="com.wzg.mbsb.entity.SysUserEntity">
+        select * from sys_user where 1=1
+        <choose>
+            <when test="id != null">
+                and id = #{id}
+            </when>
+            <when test="userName != null and userName != ''">
+                and user_name = #{userName}
+            </when>
+            <otherwise>
+                and 1=2
+            </otherwise>
+        </choose>
+    </select>
+    <select id="selectByUser" resultType="com.wzg.mbsb.entity.SysUserEntity">
+        select * from sys_user
+        <where>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName}
+            </if>
+            <if test="id != null and id != ''">
+                id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="selectByIdOrUserName2" resultType="com.wzg.mbsb.entity.SysUserEntity">
+        select * from sys_user
+        <trim prefix="where" prefixOverrides="and ">
+            <if test="id!= null and id != ''">
+                and id = #{id}
+            </if>
+            <if test="userName!= null and userName != ''">
+                and user_name = #{userName}
+            </if>
+        </trim>
+    </select>
+    <select id="selectByIdList" resultType="com.wzg.mbsb.entity.SysUserEntity">
+        select * from sys_user
+        where id in
+        <foreach collection="ids" open="(" close=")" separator="," item="id" index="i">
+            #{id}
+        </foreach>
+    </select>
+    <!--    <select id="selectUserAndRoleById" resultType="com.wzg.mbsb.dto.SysUserDTO">-->
+    <!--        select u.*, r.id "sysRole.id", r.role_name "sysRole.roleName", r.enabled "sysRole.enabled"-->
+    <!--        from sys_user u-->
+    <!--                 left join sys_user_role ul on u.id = ul.user_id-->
+    <!--                 left join sys_role r on r.id = ul.role_id-->
+    <!--        where u.id = #{id}-->
+    <!--    </select>-->
+
+    <select id="selectUserAndRoleById" resultMap="userRoleMap">
+        select u.*, r.id as role_id, r.role_name as role_name, r.enabled as enabled
+        from sys_user u
+                 left join sys_user_role ul on u.id = ul.user_id
+                 left join sys_role r on r.id = ul.role_id
+        where u.id = #{id}
+    </select>
+
+
+</mapper>

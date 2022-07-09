@@ -1,0 +1,19 @@
+logging:
+  level:
+    com.wzg.mbsb.mapper: debug
+# 配置数据源
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mybatis?serverTimezone=UTC
+    username: root
+    password: QAZ123wsx!@
+# mybatis 配置
+mybatis:
+  #  映射文件路径
+  mapper-locations: classpath:mybatis/mapper/*Mapper.xml
+  #  指定 mybatis 生成包
+  type-aliases-package: com.wzg.mbsb.entity.*
+  #  指定 mybatis 配置文件路径
+  config-location: classpath:mybatis/mybatis-config.xml
+
